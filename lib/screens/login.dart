@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+
+import 'package:friends_chat/screens/room_chat.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -28,13 +29,19 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(child: Center(child: Text( code == "" ? "Room Code" : code)), decoration: BoxDecoration(border: Border.all(width: 2,color: Colors.black)), padding:EdgeInsets.all(10), width: 100, height: 40,),
+                Container(child: Center(child: Text( code == "" ? "Room Code" : code)), decoration: BoxDecoration(border: Border.all(width: 2)), padding:EdgeInsets.all(10), width: 100, height: 40,),
                 TextButton(onPressed: (){
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RoomChat()
+                      )
+                  );
                   setState(() {
                     code = getRandomString(5);
                     print(code);
                   });
-                }, child: Container(child: Text("Create room"), decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.black)), padding: EdgeInsets.all(5),))
+                }, child: Container(child: Text("Create room"), decoration: BoxDecoration(border: Border.all(width: 2)), padding: EdgeInsets.all(5),))
               ],
             ),
           ),

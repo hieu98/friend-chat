@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:friends_chat/Screen/login.dart';
+import 'package:friends_chat/screens/login.dart';
 
 Future<void> main() async{ runApp(MyApp());}
 
