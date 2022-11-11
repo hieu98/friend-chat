@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
   share: ^2.0.4
+  google_sign_in: ^5.4.2
 
 
 
