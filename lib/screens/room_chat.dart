@@ -1,9 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
 class RoomChat extends StatefulWidget {
-  const RoomChat({Key? key}) : super(key: key);
+  final String codeRoom;
+
+  const RoomChat(
+      {Key? key,
+      required this.codeRoom})
+      : super(key: key);
 
   @override
   State<RoomChat> createState() => _RoomChatState();
@@ -20,9 +24,10 @@ class _RoomChatState extends State<RoomChat> {
             actions: [
               IconButton(
                   onPressed: () async{
-                    await Share.share('123');
+                    print(widget.codeRoom);
+                    await Share.share(widget.codeRoom);
                   },
-                  icon: Icon(Icons.send)
+                  icon: Icon(Icons.share)
               )
             ],
       ),
