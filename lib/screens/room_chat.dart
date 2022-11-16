@@ -59,10 +59,7 @@ class _RoomChatState extends State<RoomChat> {
           IconButton(
             splashColor: Colors.transparent,
               onPressed: () async {
-                //file = await picker.pickImage(source: ImageSource.gallery);
-                setState(() {
-                  deleteMessage();
-                });
+                file = await picker.pickImage(source: ImageSource.gallery);
               },
               icon: Icon(Icons.image)
           ),
@@ -160,36 +157,36 @@ class _RoomChatState extends State<RoomChat> {
                                 : CrossAxisAlignment.start,
                                 children: [
                                   Text(_user.displayName ?? 'No name'),
-                                  Card(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(8.0),
-                                        topRight: Radius.circular(8.0),
-                                        bottomLeft: Radius.circular(
-                                          docs[index]['senderId'] == _user.uid
-                                              ? 8.0
-                                              : 0.0),
-                                        bottomRight: Radius.circular(
-                                          docs[index]['senderId'] == _user.uid
-                                              ? 0.0
-                                              : 8.0),
-                                        )
-                                      ),
-                                    color: docs[index]['senderId'] == _user.uid
-                                          ? Colors.blue
-                                          : Colors.blueGrey,
-                                    elevation: 0.0,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child:Text(
-                                              docs[index]['message'],
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18.0
+                                    Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(8.0),
+                                          topRight: Radius.circular(8.0),
+                                          bottomLeft: Radius.circular(
+                                            docs[index]['senderId'] == _user.uid
+                                                ? 8.0
+                                                : 0.0),
+                                          bottomRight: Radius.circular(
+                                            docs[index]['senderId'] == _user.uid
+                                                ? 0.0
+                                                : 8.0),
+                                          )
+                                        ),
+                                      color: docs[index]['senderId'] == _user.uid
+                                            ? Colors.blue
+                                            : Colors.blueGrey,
+                                      elevation: 0.0,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child:Text(
+                                                docs[index]['message'],
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18.0
+                                                ),
                                               ),
-                                            ),
+                                      ),
                                     ),
-                                  ),
                                   SizedBox(height: 4.0,)
                                 ],
                               );
