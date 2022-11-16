@@ -34,7 +34,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
               actions: [
                 IconButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, JoinRoomScreen.id);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => JoinRoomScreen(),));
                     }, icon: Icon(Icons.add))
               ],
             ),
