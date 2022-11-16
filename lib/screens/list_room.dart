@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:friends_chat/screens/login.dart';
 
 import 'join_room.dart';
 
 class ListRoomChat extends StatefulWidget {
+  static const id = 'list_room_screen';
   final User user;
 
   const ListRoomChat(
@@ -16,6 +18,12 @@ class ListRoomChat extends StatefulWidget {
 }
 
 class _ListRoomChatState extends State<ListRoomChat> {
+
+  Future _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pop(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -26,7 +34,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
               actions: [
                 IconButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => JoinRoomScreen()));
+                      Navigator.pushReplacementNamed(context, JoinRoomScreen.id);
                     }, icon: Icon(Icons.add))
               ],
             ),
@@ -45,6 +53,11 @@ class _ListRoomChatState extends State<ListRoomChat> {
                       margin: EdgeInsets.only(left: 15),
                       child: Text(widget.user.displayName!),
                     ),
+                    IconButton(
+                        splashColor: Colors.transparent,
+                        onPressed: (){
+                          _signOut();
+                        }, icon: Icon(Icons.logout))
                   ]
                 ),
             ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/join_room.dart';
@@ -7,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
+  static const id = 'login_screen';
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
@@ -16,8 +18,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
 
   FirebaseAuth auth = FirebaseAuth.instance;
-  GoogleSignInAccount? _currentUser;
-  String _contactText = '';
+  late FirebaseFirestore firebaseFirestore;
   User? user;
 
   Future<UserCredential> signInWithGoogle() async {
