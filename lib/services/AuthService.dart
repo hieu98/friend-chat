@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
-import '../screens/login.dart';
 
 class AuthService {
   static GoogleSignIn googleSignIn= GoogleSignIn();
@@ -43,6 +40,13 @@ class AuthService {
         });
       }
     }
+  }
+
+  static Stream<QuerySnapshot> nameStream({required String userId}) {
+    return _firestore
+        .collection(_collection)
+        .where('id', isEqualTo: userId)
+        .snapshots();
   }
 
   static Future signOut() async {
