@@ -152,7 +152,16 @@ class _RoomChatState extends State<RoomChat> {
                                 ? CrossAxisAlignment.end
                                 : CrossAxisAlignment.start,
                                 children: [
-                                  Text(_user.displayName ?? 'No name'),
+                                  StreamBuilder<QuerySnapshot>(
+                                      stream: AuthService.nameStream(userId: docs[index]['senderId']),
+                                      builder: (context, snapshot) {
+                                        if(!snapshot.hasData) {
+                                          return Text("");
+                                        }
+                                        final docs = snapshot.data?.docs;
+                                        return Text(docs![0]['nickName']);
+                                      },
+                                  ),
                                     Card(
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.only(
