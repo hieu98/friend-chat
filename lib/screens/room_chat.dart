@@ -3,9 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/databases/message_dao.dart';
 import 'package:friends_chat/models/message.dart';
+import 'package:friends_chat/screens/list_room.dart';
+import 'package:friends_chat/services/AuthService.dart';
 import 'package:friends_chat/services/MessageService.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share/share.dart';
+
+import '../utils/utils.dart';
 
 class RoomChat extends StatefulWidget {
   static const id = 'room_chat_screen';
@@ -41,14 +45,7 @@ class _RoomChatState extends State<RoomChat> {
       _isComposing = false;
     });
 
-    await MessageService.sendMessage(message: message, senderId: _user.uid);
-  }
-
-  Future deleteMessage() async{
-    await FirebaseFirestore.instance
-        .collection('message')
-        .doc('message')
-        .delete();
+    await MessageService.sendMessage(message: message, senderId: _user.uid, groupId: widget.codeRoom);
   }
 
   Widget _buildComposer() {
@@ -114,14 +111,13 @@ class _RoomChatState extends State<RoomChat> {
     return SafeArea(
         child: GestureDetector(
           onTap: (){
-            FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.focusedChild?.unfocus();
-            }
-            print(widget.codeRoom);
+            Utils.unFocusTextField(context: context);
           },
           child: Scaffold(
             appBar: AppBar(
+              leading: BackButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthService.user!))),
+              ),
               actions: [
                 IconButton(
                   splashColor: Colors.transparent,
@@ -136,7 +132,7 @@ class _RoomChatState extends State<RoomChat> {
               children: [
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: MessageService.messageStream(),
+                    stream: MessageService.messageStream(groupId: widget.codeRoom,),
                     builder: (context, snapshot) {
                       if(!snapshot.hasData) {
                         return Center(

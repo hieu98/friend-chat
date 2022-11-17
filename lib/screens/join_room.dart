@@ -3,6 +3,9 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/room_chat.dart';
+import 'package:friends_chat/services/GroupService.dart';
+
+import '../utils/utils.dart';
 
 class JoinRoomScreen extends StatefulWidget {
   static const id = 'joinscreen';
@@ -23,14 +26,18 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
       length, (_) => _char.codeUnitAt(random.nextInt(_char.length))));
 
   @override
+  void initState() {
+    // TODO: implement initState
+    _messageController.clear();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: GestureDetector(
           onTap: (){
-            FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.focusedChild?.unfocus();
-            }
+            Utils.unFocusTextField(context: context);
           },
           child: Scaffold(
             appBar: AppBar(),
@@ -43,16 +50,16 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                     Container(
                       child: TextButton(
                           onPressed: () {
+                            setState(() {
+                              code = getRandomString(5);
+                              GroupService.createGroup(groupId: code);
+                            });
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => RoomChat(
                                       codeRoom: code,
                                     )));
-                            setState(() {
-                              code = getRandomString(5);
-                              print(code);
-                            });
                           },
                           child: Container(
                             child: Text("Create room"),
@@ -79,6 +86,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                         ),
                         TextButton(
                             onPressed: () {
+                              Utils.unFocusTextField(context: context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
