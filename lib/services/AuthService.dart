@@ -49,6 +49,13 @@ class AuthService {
         .snapshots();
   }
 
+  static Future renameUser({required String name}) {
+    return _firestore
+        .collection(_collection)
+        .doc(user?.uid)
+        .update({'nickName' : name});
+  }
+
   static Future signOut() async {
     await auth.signOut();
     await googleSignIn.disconnect();
