@@ -115,6 +115,7 @@ class _RoomChatState extends State<RoomChat> {
           },
           child: Scaffold(
             appBar: AppBar(
+              title: Text(widget.codeRoom),
               leading: BackButton(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthService.user!))),
               ),
