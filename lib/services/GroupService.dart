@@ -22,11 +22,10 @@ class GroupService {
     }
   }
 
-  static Stream<QuerySnapshot> groupStream() {
+  static Stream<QuerySnapshot> groupStream({required String groupId}) {
     return _firestore
         .collection(_collection)
-        .where('userId', isEqualTo: AuthService.user?.uid)
-        .orderBy('time', descending: true)
+        .where('groupId', isEqualTo: groupId)
         .snapshots();
   }
 }

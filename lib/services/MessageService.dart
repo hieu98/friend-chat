@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:friends_chat/services/AuthService.dart';
 
 class MessageService {
   static String _collection = "message";
@@ -18,6 +19,14 @@ class MessageService {
         .collection(_collection)
         .where('groupId', isEqualTo: groupId)
         .orderBy('time', descending: true)
+        .snapshots();
+  }
+
+  static Stream<QuerySnapshot> groupIdByUserId() {
+    return _firestore
+        .collection(_collection)
+        .where('senderId', isEqualTo: AuthService.user?.uid)
+        .orderBy('groupId', descending: true)
         .snapshots();
   }
 }
