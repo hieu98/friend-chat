@@ -24,6 +24,7 @@ class ListRoomChat extends StatefulWidget {
 
 class _ListRoomChatState extends State<ListRoomChat> {
   bool isLoading = false;
+  final _messageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +52,59 @@ class _ListRoomChatState extends State<ListRoomChat> {
                           children:[
                             CircleAvatar(
                               radius: 15,
-                              child: Image.network(widget.user.photoURL!),
+                              child: StreamBuilder<QuerySnapshot>(
+                                stream: AuthService.nameStream(userId: widget.user.uid),
+                                builder: (context, snapshot) {
+                                  if(!snapshot.hasData) {
+                                    return Text("");
+                                  }
+                                  final docs = snapshot.data?.docs;
+                                  return Image.network(docs![0]['photoUrl']);
+                                },
+                              ),
                             ),
                             Container(
                               margin: EdgeInsets.only(left: 15),
-                              child: Text(widget.user.displayName!),
+                              child: TextButton(
+                                  onPressed: (){
+                                    showDialog(context: context, builder: (context) {
+                                      return Center(
+                                        child: Card(
+                                          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                                          child: Container(
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  child: Text('Change Name', textAlign: TextAlign.center,),
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.all(20),
+                                                  child: TextField(
+                                                    controller: _messageController,
+                                                  ),
+                                                ),
+                                                ElevatedButton(onPressed: (){
+                                                    AuthService.renameUser(name: _messageController.text);
+                                                    Navigator.of(context).pop();
+                                                  }, child: Text('Ok'))
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    });
+                                  },
+                                  child: StreamBuilder<QuerySnapshot>(
+                                    stream: AuthService.nameStream(userId: widget.user.uid),
+                                    builder: (context, snapshot) {
+                                      if(!snapshot.hasData) {
+                                        return Text("");
+                                      }
+                                      final docs = snapshot.data?.docs;
+                                      return Text(docs![0]['nickName'], style: TextStyle(fontSize: 17),);
+                                    },
+                                  ),
+                              ),
                             ),
                             IconButton(
                                 splashColor: Colors.transparent,
@@ -85,14 +134,14 @@ class _ListRoomChatState extends State<ListRoomChat> {
                         }
                         final docs = snapshot.data?.docs;
                         final size = snapshot.data?.size;
-                        String a = "";
+                        String groupId = "";
                         return ListView(
                           padding: EdgeInsets.all(8.0),
                           children: List.generate(
                               size!,
                               (index) {
-                                a = ((index + 1) < size) ? docs![index + 1]['groupId'] : '';
-                                return (a == docs![index]['groupId']) ? Container() : StreamBuilder<QuerySnapshot>(
+                                groupId = ((index + 1) < size) ? docs![index + 1]['groupId'] : '';
+                                return (groupId == docs![index]['groupId']) ? Container() : StreamBuilder<QuerySnapshot>(
                                   stream: GroupService.groupStream(groupId: docs[index]['groupId']),
                                   builder: (context, snapshot2) {
                                     if(!snapshot2.hasData) {

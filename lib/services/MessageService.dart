@@ -2,14 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:friends_chat/services/AuthService.dart';
 
 class MessageService {
-  static String _collection = "message";
+  static String _collection = "messages";
   static final _firestore = FirebaseFirestore.instance;
 
-  static Future sendMessage({required String? message, required String senderId, required String groupId}) async {
-    await _firestore.collection(_collection).doc(message).set({
+  static Future sendMessage({required String? message, required String senderId, required String groupId, required String typeMessage}) async {
+    await _firestore.collection(_collection).doc(DateTime.now().toString()).set({
       'senderId' : senderId,
       'groupId' : groupId,
       'message' : message,
+      'typeMessage' : typeMessage,
       'time' : DateTime.now()
     });
   }
