@@ -28,4 +28,24 @@ class GroupService {
         .where('groupId', isEqualTo: groupId)
         .snapshots();
   }
+
+  static Future renameGroup(
+      {required String groupName, required String groupId}) {
+    return _firestore
+        .collection(_collection)
+        .doc(groupId)
+        .update({'nameGroup': groupName});
+  }
+
+  static Future checkGroupToDelete() async {
+    final QuerySnapshot result = await _firestore
+        .collection(_collection)
+        .get();
+    final List<DocumentSnapshot> documents = result.docs;
+
+  }
+
+  static Future deleteGroup({required String groupId}) {
+    return _firestore.collection(_collection).doc(groupId).delete();
+  }
 }
