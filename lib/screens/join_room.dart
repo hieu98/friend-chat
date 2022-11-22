@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/room_chat.dart';
-import 'package:friends_chat/services/GroupService.dart';
+import 'package:friends_chat/services/group_provider.dart';
 
 import '../utils/utils.dart';
 
@@ -53,7 +53,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                           onPressed: () {
                             setState(() {
                               code = getRandomString(5);
-                              GroupService.createGroup(groupId: code);
+                              GroupProvider.createGroup(groupId: code);
                             });
                             Navigator.push(
                                 context,

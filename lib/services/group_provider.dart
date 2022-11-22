@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:friends_chat/services/AuthService.dart';
+import 'package:friends_chat/services/auth_provider.dart';
 
-class GroupService {
+class GroupProvider {
   static String _collection = "groups";
   static final _firestore = FirebaseFirestore.instance;
 
@@ -16,7 +16,7 @@ class GroupService {
       _firestore.collection(_collection).doc(groupId).set({
         'nameGroup': groupId,
         'groupId': groupId,
-        'avatarGroup' : AuthService.user?.photoURL,
+        'avatarGroup' : AuthProvider.user?.photoURL,
         'time' : DateTime.now()
       });
     }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/list_room.dart';
-import 'package:friends_chat/services/AuthService.dart';
+import 'package:friends_chat/services/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const id = 'login_screen';
@@ -15,8 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   initState() {
     super.initState();
-    if(AuthService.check()){
-      Future(()=> Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthService.user!,))));
+    if(AuthProvider.check()){
+      Future(()=> Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthProvider.user!,))));
     }
   }
 
@@ -28,9 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               child: IconButton(
                 onPressed: () async{
-                  await AuthService.signInWithGoogle();
-                  if(AuthService.check()){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthService.user!,)));
+                  await AuthProvider.signInWithGoogle();
+                  if(AuthProvider.check()){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthProvider.user!,)));
                   }
                 },
                 icon: Icon(Icons.g_mobiledata),

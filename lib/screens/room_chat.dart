@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:friends_chat/databases/message_dao.dart';
 import 'package:friends_chat/models/message.dart';
 import 'package:friends_chat/screens/list_room.dart';
-import 'package:friends_chat/services/AuthService.dart';
-import 'package:friends_chat/services/GroupService.dart';
-import 'package:friends_chat/services/MessageService.dart';
-import 'package:friends_chat/services/SettingService.dart';
+import 'package:friends_chat/services/auth_provider.dart';
+import 'package:friends_chat/services/group_provider.dart';
+import 'package:friends_chat/services/message_provider.dart';
+import 'package:friends_chat/services/setting_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
@@ -51,7 +51,7 @@ class _RoomChatState extends State<RoomChat> {
       _isComposing = false;
     });
 
-    await MessageService.sendMessage(message: message, senderId: _user.uid, groupId: widget.codeRoom, typeMessage: 'text');
+    await MessageProvider.sendMessage(message: message, senderId: _user.uid, groupId: widget.codeRoom, typeMessage: 'text');
   }
 
   Future<bool> askPermission() async{
@@ -69,11 +69,11 @@ class _RoomChatState extends State<RoomChat> {
 
   Future uploadFile(XFile file) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    UploadTask uploadTask = SettingService().uploadFile(file, fileName);
+    UploadTask uploadTask = SettingProvider().uploadFile(file, fileName);
     try {
       TaskSnapshot snapshot = await uploadTask;
       imageUrl = await snapshot.ref.getDownloadURL();
-      MessageService.sendMessage(message: imageUrl, senderId: _user.uid, groupId: widget.codeRoom, typeMessage: 'image');
+      MessageProvider.sendMessage(message: imageUrl, senderId: _user.uid, groupId: widget.codeRoom, typeMessage: 'image');
     } on FirebaseException catch (e) {
       setState(() {
         //isLoading = false;
@@ -156,7 +156,7 @@ class _RoomChatState extends State<RoomChat> {
           child: Scaffold(
             appBar: AppBar(
               title: StreamBuilder<QuerySnapshot>(
-                stream: GroupService.groupStream(groupId: widget.codeRoom),
+                stream: GroupProvider.groupStream(groupId: widget.codeRoom),
                 builder: (context, snapshot) {
                   if(!snapshot.hasData) {
                     return Text("");
@@ -166,7 +166,7 @@ class _RoomChatState extends State<RoomChat> {
                 },
               ),
               leading: BackButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthService.user!))),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ListRoomChat(user: AuthProvider.user!))),
               ),
               actions: [
                 IconButton(
@@ -196,7 +196,7 @@ class _RoomChatState extends State<RoomChat> {
                                     ),
                                   ),
                                   ElevatedButton(onPressed: (){
-                                    GroupService.renameGroup(groupName: _messageControllerSetting.text, groupId: widget.codeRoom);
+                                    GroupProvider.renameGroup(groupName: _messageControllerSetting.text, groupId: widget.codeRoom);
                                     Navigator.of(context).pop();
                                     }, child: Text('Ok'))
                                 ],
@@ -214,7 +214,7 @@ class _RoomChatState extends State<RoomChat> {
               children: [
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: MessageService.messageStream(groupId: widget.codeRoom,),
+                    stream: MessageProvider.messageStream(groupId: widget.codeRoom,),
                     builder: (context, snapshot) {
                       if(!snapshot.hasData) {
                         return Center(
@@ -235,7 +235,7 @@ class _RoomChatState extends State<RoomChat> {
                                 : CrossAxisAlignment.start,
                                 children: [
                                   StreamBuilder<QuerySnapshot>(
-                                      stream: AuthService.nameStream(userId: docs[index]['senderId']),
+                                      stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                       builder: (context, snapshot) {
                                         if(!snapshot.hasData) {
                                           return Text("");
@@ -250,7 +250,7 @@ class _RoomChatState extends State<RoomChat> {
                                             : MainAxisAlignment.start,
                                         children:[
                                           StreamBuilder<QuerySnapshot>(
-                                            stream: AuthService.nameStream(userId: docs[index]['senderId']),
+                                            stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                             builder: (context, snapshot) {
                                               if(!snapshot.hasData) {
                                                 return Text("");
@@ -290,7 +290,7 @@ class _RoomChatState extends State<RoomChat> {
                                               padding: EdgeInsets.all(8.0),
                                               child:
                                               StreamBuilder<QuerySnapshot>(
-                                                stream: MessageService.messageStream(groupId: widget.codeRoom),
+                                                stream: MessageProvider.messageStream(groupId: widget.codeRoom),
                                                 builder: (context, snapshot) {
                                                   if(!snapshot.hasData) {
                                                     return Text("");
@@ -315,7 +315,7 @@ class _RoomChatState extends State<RoomChat> {
                                             ),
                                           ),
                                           StreamBuilder<QuerySnapshot>(
-                                            stream: AuthService.nameStream(userId: docs[index]['senderId']),
+                                            stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                             builder: (context, snapshot) {
                                               if(!snapshot.hasData) {
                                                 return Text("");
