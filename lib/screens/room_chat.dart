@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -5,15 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:friends_chat/databases/message_dao.dart';
 import 'package:friends_chat/models/message.dart';
 import 'package:friends_chat/screens/list_room.dart';
-import 'package:friends_chat/services/auth_provider.dart';
-import 'package:friends_chat/services/group_provider.dart';
-import 'package:friends_chat/services/message_provider.dart';
-import 'package:friends_chat/services/setting_provider.dart';
+import 'package:friends_chat/providers/auth_provider.dart';
+import 'package:friends_chat/providers/group_provider.dart';
+import 'package:friends_chat/providers/message_provider.dart';
+import 'package:friends_chat/providers/setting_provider.dart';
+import 'package:friends_chat/screens/setting.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 
 import '../utils/utils.dart';
+import 'full_photo.dart';
 
 class RoomChat extends StatefulWidget {
   static const id = 'room_chat_screen';
@@ -41,6 +44,7 @@ class _RoomChatState extends State<RoomChat> {
 
   bool _isComposing = false;
   late User _user;
+  bool isTyping = false;
 
   Future _sendMessage() async {
     final message = _messageController.text.trim();
@@ -54,19 +58,6 @@ class _RoomChatState extends State<RoomChat> {
     await MessageProvider.sendMessage(message: message, senderId: _user.uid, groupId: widget.codeRoom, typeMessage: 'text');
   }
 
-  Future<bool> askPermission() async{
-    PermissionStatus status = await Permission.storage.request();
-    if(status.isDenied == true)
-    {
-      //openAppSettings();
-      return false;
-    }
-    else
-    {
-      return true;
-    }
-  }
-
   Future uploadFile(XFile file) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
     UploadTask uploadTask = SettingProvider().uploadFile(file, fileName);
@@ -78,7 +69,6 @@ class _RoomChatState extends State<RoomChat> {
       setState(() {
         //isLoading = false;
       });
-      //Fluttertoast.showToast(msg: e.message ?? e.toString());
     }
   }
 
@@ -87,13 +77,32 @@ class _RoomChatState extends State<RoomChat> {
       padding: EdgeInsets.all(3.0),
       child: Row(
         children: [
-          IconButton(
+          isTyping
+              ?  IconButton(
+                splashColor: Colors.transparent,
+                onPressed: (){
+                  setState(() {
+                    isTyping = false;
+                  });
+                },
+                icon: Icon(Icons.navigate_next))
+              :IconButton(
+                splashColor: Colors.transparent,
+                onPressed: () async {
+                  var a = await Utils.askPermission();
+                  if(a){
+                    // file = await picker.pickImage(source: ImageSource.gallery);
+                    // uploadFile(file!);
+                  }
+                },
+                icon: Icon(Icons.camera_alt)
+          ),
+          isTyping ? Container() : IconButton(
             splashColor: Colors.transparent,
               onPressed: () async {
-              var a = await askPermission();
+              var a = await Utils.askPermission();
                 if(a){
                   file = await picker.pickImage(source: ImageSource.gallery);
-                  print('!123 ${file?.path}');
                   uploadFile(file!);
                 }
               },
@@ -107,6 +116,7 @@ class _RoomChatState extends State<RoomChat> {
                   focusNode: _messageFocusNode,
                   autofocus: false,
                   textDirection: TextDirection.ltr,
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     fillColor: Colors.grey,
                     isCollapsed: true,
@@ -114,11 +124,22 @@ class _RoomChatState extends State<RoomChat> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    contentPadding: EdgeInsets.all(10.0)
+                    contentPadding: EdgeInsets.all(10.0),
+                    suffixIcon: IconButton(
+                        onPressed :(){
+
+                        },
+                        icon : Icon(Icons.tag_faces)
+                    ),
                   ),
                   onChanged: (value){
                     setState(() {
                       _isComposing = value.isNotEmpty;
+                    });
+                  },
+                  onTap: (){
+                    setState(() {
+                      isTyping = true;
                     });
                   },
                 ),
@@ -179,32 +200,7 @@ class _RoomChatState extends State<RoomChat> {
                 IconButton(
                     splashColor: Colors.transparent,
                     onPressed: (){
-                      showDialog(context: context, builder: (context) {
-                        return Center(
-                          child: Card(
-                            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                            child: Container(
-                              child: Column(
-                                children: [
-                                  Container(
-                                    child: Text('Change Name', textAlign: TextAlign.center,),
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.all(20),
-                                    child: TextField(
-                                      controller: _messageControllerSetting,
-                                    ),
-                                  ),
-                                  ElevatedButton(onPressed: (){
-                                    GroupProvider.renameGroup(groupName: _messageControllerSetting.text, groupId: widget.codeRoom);
-                                    Navigator.of(context).pop();
-                                    }, child: Text('Ok'))
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      });
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen(isSettingUser: false, codeRoom: widget.codeRoom)));
                     },
                     icon: Icon(Icons.settings)
                 ),
@@ -234,39 +230,53 @@ class _RoomChatState extends State<RoomChat> {
                                 ? CrossAxisAlignment.end
                                 : CrossAxisAlignment.start,
                                 children: [
-                                  StreamBuilder<QuerySnapshot>(
-                                      stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
-                                      builder: (context, snapshot) {
-                                        if(!snapshot.hasData) {
-                                          return Text("");
-                                        }
-                                        final docs = snapshot.data?.docs;
-                                        return Text(docs![0]['nickName']);
-                                      },
+                                  Container(
+                                    margin :EdgeInsets.only(left: 35, right: 35),
+                                    child: StreamBuilder<QuerySnapshot>(
+                                        stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
+                                        builder: (context, snapshot) {
+                                          if(!snapshot.hasData) {
+                                            return Text("");
+                                          }
+                                          final docs = snapshot.data?.docs;
+                                          return Text(docs![0]['nickName']);
+                                        },
+                                    ),
                                   ),
                                     Row(
                                         mainAxisAlignment: docs[index]['senderId'] == _user.uid
                                             ? MainAxisAlignment.end
                                             : MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.end,
                                         children:[
-                                          StreamBuilder<QuerySnapshot>(
-                                            stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
-                                            builder: (context, snapshot) {
-                                              if(!snapshot.hasData) {
-                                                return Text("");
-                                              }
-                                              final docs1 = snapshot.data?.docs;
-                                              return docs[index]['senderId'] != _user.uid ? Material(
-                                                child: Image.network(
-                                                  docs1![0]['photoUrl'],
-                                                  width: 35,
-                                                  height: 35,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ): Container();
-                                            },
+                                          Padding(
+                                            padding:EdgeInsets.only(bottom: 5),
+                                            child: StreamBuilder<QuerySnapshot>(
+                                              stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
+                                              builder: (context, snapshot) {
+                                                if(!snapshot.hasData) {
+                                                  return Text("");
+                                                }
+                                                final docs1 = snapshot.data?.docs;
+                                                return docs[index]['senderId'] != _user.uid ? Material(
+                                                  child: CircleAvatar(
+                                                    radius: 15,
+                                                    backgroundColor: Colors.white,
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      child: CachedNetworkImage(
+                                                        width: 35,
+                                                        height: 35,
+                                                        imageUrl: docs1![0]['photoUrl'],
+                                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                                        errorWidget:(context, url, error) => Icon(Icons.error),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ): Container();
+                                              },
+                                            ),
                                           ),
-
                                           Card(
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.only(
@@ -297,11 +307,17 @@ class _RoomChatState extends State<RoomChat> {
                                                   }
                                                   final docs1 = snapshot.data?.docs;
                                                   return docs1![index]['typeMessage'] == 'image' ? Material(
-                                                    child: Image.network(
-                                                      docs1[index]['message'],
-                                                      width: 100,
-                                                      height: 100,
-                                                      fit: BoxFit.cover,
+                                                    child: GestureDetector(
+                                                      onTap: (){
+                                                        Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoScreen(url: docs1[index]['message']),));
+                                                      },
+                                                      child: CachedNetworkImage(
+                                                        imageUrl: docs1[index]['message'],
+                                                        width: 100,
+                                                        height: 100,
+                                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                                        errorWidget:(context, url, error) => Icon(Icons.error),
+                                                      ),
                                                     ),
                                                   ): Text(
                                                     docs[index]['message'],
@@ -314,22 +330,33 @@ class _RoomChatState extends State<RoomChat> {
                                               ),
                                             ),
                                           ),
-                                          StreamBuilder<QuerySnapshot>(
-                                            stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
-                                            builder: (context, snapshot) {
-                                              if(!snapshot.hasData) {
-                                                return Text("");
-                                              }
-                                              final docs1 = snapshot.data?.docs;
-                                              return docs[index]['senderId'] == _user.uid ? Material(
-                                                child: Image.network(
-                                                  docs1![0]['photoUrl'],
-                                                  width: 35,
-                                                  height: 35,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ): Container();
-                                            },
+                                          Padding(
+                                            padding: EdgeInsets.only(bottom: 5),
+                                            child: StreamBuilder<QuerySnapshot>(
+                                              stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
+                                              builder: (context, snapshot) {
+                                                if(!snapshot.hasData) {
+                                                  return Text("");
+                                                }
+                                                final docs1 = snapshot.data?.docs;
+                                                return docs[index]['senderId'] == _user.uid ? Material(
+                                                  child: CircleAvatar(
+                                                    radius: 15,
+                                                    backgroundColor: Colors.white,
+                                                    child: ClipRRect(
+                                                        borderRadius: BorderRadius.circular(15),
+                                                        child: CachedNetworkImage(
+                                                          width: 35,
+                                                          height: 35,
+                                                          imageUrl: docs1![0]['photoUrl'],
+                                                          placeholder: (context, url) => CircularProgressIndicator(),
+                                                          errorWidget:(context, url, error) => Icon(Icons.error),
+                                                        ),
+                                                    ),
+                                                  )
+                                                ): Container();
+                                              },
+                                            ),
                                           ),
                                         ]
                                     ),

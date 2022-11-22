@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/room_chat.dart';
-import 'package:friends_chat/services/group_provider.dart';
+import 'package:friends_chat/providers/group_provider.dart';
 
 import '../utils/utils.dart';
 
@@ -25,6 +25,25 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
 
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _char.codeUnitAt(random.nextInt(_char.length))));
+
+  void createNewGroup() async{
+    setState(() {
+      code = getRandomString(5);
+    });
+    var isNewGroup = await GroupProvider.createGroup(groupId: code);
+    if(isNewGroup){
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => RoomChat(
+                codeRoom: code,
+              )
+          )
+      );
+    }else {
+      createNewGroup();
+    }
+  }
 
   @override
   void initState() {
@@ -51,16 +70,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                     Container(
                       child: TextButton(
                           onPressed: () {
-                            setState(() {
-                              code = getRandomString(5);
-                              GroupProvider.createGroup(groupId: code);
-                            });
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => RoomChat(
-                                      codeRoom: code,
-                                    )));
+                            createNewGroup();
                           },
                           child: Container(
                             child: Text("Create room"),

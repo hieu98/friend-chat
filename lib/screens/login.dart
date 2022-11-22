@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/list_room.dart';
-import 'package:friends_chat/services/auth_provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const id = 'login_screen';

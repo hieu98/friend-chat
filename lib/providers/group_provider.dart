@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:friends_chat/services/auth_provider.dart';
+import 'package:friends_chat/providers/auth_provider.dart';
 
 class GroupProvider {
   static String _collection = "groups";
   static final _firestore = FirebaseFirestore.instance;
 
-  static Future createGroup({required String? groupId}) async {
-
+  static Future<bool> createGroup({required String? groupId}) async {
     final QuerySnapshot result = await _firestore
         .collection(_collection)
         .where('groupId', isEqualTo: groupId)
@@ -19,6 +18,9 @@ class GroupProvider {
         'avatarGroup' : AuthProvider.user?.photoURL,
         'time' : DateTime.now()
       });
+      return true;
+    }else {
+      return false;
     }
   }
 
@@ -29,12 +31,18 @@ class GroupProvider {
         .snapshots();
   }
 
-  static Future renameGroup(
-      {required String groupName, required String groupId}) {
+  static Future renameGroup({required String groupName, required String groupId}) {
     return _firestore
         .collection(_collection)
         .doc(groupId)
         .update({'nameGroup': groupName});
+  }
+
+  static Future changeAvatarGroup({required String url, required String groupId}) {
+    return _firestore
+        .collection(_collection)
+        .doc(groupId)
+        .update({'avatarGroup': url});
   }
 
   static Future checkGroupToDelete() async {

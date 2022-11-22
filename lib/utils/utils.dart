@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Utils{
 
@@ -9,4 +10,16 @@ class Utils{
     }
   }
 
+  static Future<bool> askPermission() async{
+    PermissionStatus status = await Permission.storage.request();
+    if(status.isDenied == true)
+    {
+      //openAppSettings();
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
 }

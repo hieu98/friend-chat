@@ -42,7 +42,7 @@ class AuthProvider {
     }
   }
 
-  static Stream<QuerySnapshot> nameStream({required String userId}) {
+  static Stream<QuerySnapshot> nameStream({required String? userId}) {
     return _firestore
         .collection(_collection)
         .where('id', isEqualTo: userId)
@@ -54,6 +54,13 @@ class AuthProvider {
         .collection(_collection)
         .doc(user?.uid)
         .update({'nickName' : name});
+  }
+
+  static Future changeAvatarUser({required String url}) {
+    return _firestore
+        .collection(_collection)
+        .doc(user?.uid)
+        .update({'photoUrl' : url});
   }
 
   static Future signOut() async {

@@ -1,11 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/login.dart';
 import 'package:friends_chat/screens/room_chat.dart';
-import 'package:friends_chat/services/auth_provider.dart';
-import 'package:friends_chat/services/group_provider.dart';
-import 'package:friends_chat/services/message_provider.dart';
+import 'package:friends_chat/screens/setting.dart';
+import 'package:friends_chat/providers/auth_provider.dart';
+import 'package:friends_chat/providers/group_provider.dart';
+import 'package:friends_chat/providers/message_provider.dart';
 
 import 'join_room.dart';
 
@@ -43,7 +45,6 @@ class _ListRoomChatState extends State<ListRoomChat> {
             body: Column(
               children:[
                   Container(
-                    height: 100,
                     margin: EdgeInsets.only(top: 15),
                       child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -51,48 +52,31 @@ class _ListRoomChatState extends State<ListRoomChat> {
                             mainAxisAlignment: MainAxisAlignment.center,
                           children:[
                             CircleAvatar(
-                              radius: 15,
-                              child: StreamBuilder<QuerySnapshot>(
-                                stream: AuthProvider.nameStream(userId: widget.user.uid),
-                                builder: (context, snapshot) {
-                                  if(!snapshot.hasData) {
-                                    return Text("");
-                                  }
-                                  final docs = snapshot.data?.docs;
-                                  return Image.network(docs![0]['photoUrl']);
-                                },
+                              radius: 20,
+                              backgroundColor: Colors.white,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: StreamBuilder<QuerySnapshot>(
+                                  stream: AuthProvider.nameStream(userId: widget.user.uid),
+                                  builder: (context, snapshot) {
+                                    if(!snapshot.hasData) {
+                                      return Text("");
+                                    }
+                                    final docs = snapshot.data?.docs;
+                                    return CachedNetworkImage(
+                                        imageUrl: docs![0]['photoUrl'],
+                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                        errorWidget:(context, url, error) => Icon(Icons.error),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             Container(
                               margin: EdgeInsets.only(left: 15),
                               child: TextButton(
                                   onPressed: (){
-                                    showDialog(context: context, builder: (context) {
-                                      return Center(
-                                        child: Card(
-                                          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                                          child: Container(
-                                            child: Column(
-                                              children: [
-                                                Container(
-                                                  child: Text('Change Name', textAlign: TextAlign.center,),
-                                                ),
-                                                Container(
-                                                  margin: EdgeInsets.all(20),
-                                                  child: TextField(
-                                                    controller: _messageController,
-                                                  ),
-                                                ),
-                                                ElevatedButton(onPressed: (){
-                                                    AuthProvider.renameUser(name: _messageController.text);
-                                                    Navigator.of(context).pop();
-                                                  }, child: Text('Ok'))
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    });
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen(isSettingUser: true, codeRoom: null),));
                                   },
                                   child: StreamBuilder<QuerySnapshot>(
                                     stream: AuthProvider.nameStream(userId: widget.user.uid),
@@ -101,7 +85,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                         return Text("");
                                       }
                                       final docs = snapshot.data?.docs;
-                                      return Text(docs![0]['nickName'], style: TextStyle(fontSize: 17),);
+                                      return Text(docs![0]['nickName'], style: TextStyle(fontSize: 17), overflow: TextOverflow.ellipsis,);
                                     },
                                   ),
                               ),
@@ -150,23 +134,56 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                       );
                                     }
                                     final docs2 = snapshot2.data?.docs;
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(8.0))
-                                      ),
-                                      color: Colors.blue,
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: TextButton(
-                                          child: Text(docs2![0]['nameGroup'], style: TextStyle(color: Colors.black, fontSize: 18)),
-                                          onPressed: (){
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) => RoomChat(
-                                                      codeRoom: docs2[0]['groupId'],
-                                                    )));
-                                          },
+                                    return GestureDetector(
+                                      onTap: (){
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => RoomChat(
+                                                  codeRoom: docs2![0]['groupId'],
+                                                )
+                                            )
+                                        );
+                                      },
+                                      child: Card(
+                                        shape: BeveledRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                                          side: BorderSide(color: Colors.black, width: 0.5)
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children:[
+                                              Padding(
+                                                padding: EdgeInsets.only(left: 10),
+                                                child: CircleAvatar(
+                                                  radius: 25,
+                                                  backgroundColor: Colors.white,
+                                                  child: ClipRRect(
+                                                    borderRadius: BorderRadius.circular(25),
+                                                    child: CachedNetworkImage(
+                                                      imageUrl: docs2![0]['avatarGroup'],
+                                                      placeholder: (context, url) => CircularProgressIndicator(),
+                                                      errorWidget:(context, url, error) => Icon(Icons.error),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Flexible(
+                                                child: Padding(
+                                                    padding: EdgeInsets.only(left: 10, right: 10),
+                                                    child: Text(
+                                                      docs2[0]['nameGroup'],
+                                                      style: TextStyle(color: Colors.black, fontSize: 15,),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    )
+                                                ),
+                                              ),
+                                            ]
+                                          ),
                                         ),
                                       ),
                                     );
