@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:friends_chat/services/auth_provider.dart';
+import 'package:friends_chat/providers/auth_provider.dart';
 
 class MessageProvider {
   static String _collection = "messages";
