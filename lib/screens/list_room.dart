@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/screens/login.dart';
 import 'package:friends_chat/screens/room_chat.dart';
-import 'package:friends_chat/services/AuthService.dart';
-import 'package:friends_chat/services/GroupService.dart';
-import 'package:friends_chat/services/MessageService.dart';
+import 'package:friends_chat/services/auth_provider.dart';
+import 'package:friends_chat/services/group_provider.dart';
+import 'package:friends_chat/services/message_provider.dart';
 
 import 'join_room.dart';
 
@@ -53,7 +53,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                             CircleAvatar(
                               radius: 15,
                               child: StreamBuilder<QuerySnapshot>(
-                                stream: AuthService.nameStream(userId: widget.user.uid),
+                                stream: AuthProvider.nameStream(userId: widget.user.uid),
                                 builder: (context, snapshot) {
                                   if(!snapshot.hasData) {
                                     return Text("");
@@ -84,7 +84,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                                   ),
                                                 ),
                                                 ElevatedButton(onPressed: (){
-                                                    AuthService.renameUser(name: _messageController.text);
+                                                    AuthProvider.renameUser(name: _messageController.text);
                                                     Navigator.of(context).pop();
                                                   }, child: Text('Ok'))
                                               ],
@@ -95,7 +95,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                     });
                                   },
                                   child: StreamBuilder<QuerySnapshot>(
-                                    stream: AuthService.nameStream(userId: widget.user.uid),
+                                    stream: AuthProvider.nameStream(userId: widget.user.uid),
                                     builder: (context, snapshot) {
                                       if(!snapshot.hasData) {
                                         return Text("");
@@ -112,10 +112,10 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                   setState(() {
                                     isLoading = true;
                                   });
-                                  await AuthService.signOut();
+                                  await AuthProvider.signOut();
                                   setState(() {
                                     isLoading = false;
-                                    if(!AuthService.check()){
+                                    if(!AuthProvider.check()){
                                       Navigator.pop(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
                                     }
                                   });
@@ -125,7 +125,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                 ),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                      stream: MessageService.groupIdByUserId(),
+                      stream: MessageProvider.groupIdByUserId(),
                       builder: (context, snapshot) {
                         if(!snapshot.hasData) {
                           return Center(
@@ -142,7 +142,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                               (index) {
                                 groupId = ((index + 1) < size) ? docs![index + 1]['groupId'] : '';
                                 return (groupId == docs![index]['groupId']) ? Container() : StreamBuilder<QuerySnapshot>(
-                                  stream: GroupService.groupStream(groupId: docs[index]['groupId']),
+                                  stream: GroupProvider.groupStream(groupId: docs[index]['groupId']),
                                   builder: (context, snapshot2) {
                                     if(!snapshot2.hasData) {
                                       return Center(

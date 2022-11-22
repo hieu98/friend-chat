@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:friends_chat/services/AuthService.dart';
+import 'package:friends_chat/services/auth_provider.dart';
 
-class MessageService {
+class MessageProvider {
   static String _collection = "messages";
   static final _firestore = FirebaseFirestore.instance;
 
@@ -26,7 +26,7 @@ class MessageService {
   static Stream<QuerySnapshot> groupIdByUserId() {
     return _firestore
         .collection(_collection)
-        .where('senderId', isEqualTo: AuthService.user?.uid)
+        .where('senderId', isEqualTo: AuthProvider.user?.uid)
         .orderBy('groupId', descending: true)
         .snapshots();
   }

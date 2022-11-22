@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthService {
+class AuthProvider {
   static GoogleSignIn googleSignIn= GoogleSignIn();
   static String _collection = "users";
   static FirebaseAuth auth = FirebaseAuth.instance;
