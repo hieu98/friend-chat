@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:friends_chat/providers/group_provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/setting_provider.dart';
@@ -65,8 +66,8 @@ class _SettingScreenState extends State<SettingScreen> {
                 child:
                 GestureDetector(
                   onTap: () async{
-                    var a = await Utils.askPermission();
-                    if(a){
+                    var checkPermission = await Utils.askPermission([Permission.storage, Permission.mediaLibrary]);
+                    if(checkPermission){
                       file = await picker.pickImage(source: ImageSource.gallery);
                       uploadFile(file!);
                     }
@@ -78,7 +79,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       borderRadius: BorderRadius.circular(45),
                       child: CachedNetworkImage(
                         imageUrl: widget.isSettingUser ? docs![0]['photoUrl'] : docs![0]['avatarGroup'],
-                        placeholder: (context, url) => CircularProgressIndicator(),
+                        placeholder: (context, url) => Center(heightFactor: 20, widthFactor: 20, child: CircularProgressIndicator()),
                         errorWidget:(context, url, error) => Icon(Icons.error),
                       ),
                     ),
@@ -87,7 +88,7 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               Row(
                 children: [
-                  Padding(padding: EdgeInsets.all(10.0),child: Text('Name:')),
+                  Padding(padding: EdgeInsets.only(right: 7, left: 17, top: 10, bottom: 10),child: Text('Name:')),
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(right: 10, top: 10, bottom: 10),

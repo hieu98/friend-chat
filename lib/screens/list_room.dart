@@ -65,7 +65,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                     final docs = snapshot.data?.docs;
                                     return CachedNetworkImage(
                                         imageUrl: docs![0]['photoUrl'],
-                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                        placeholder: (context, url) => Center(heightFactor: 5, widthFactor: 5, child: CircularProgressIndicator(value: 0,)),
                                         errorWidget:(context, url, error) => Icon(Icons.error),
                                     );
                                   },
@@ -165,7 +165,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                                     borderRadius: BorderRadius.circular(25),
                                                     child: CachedNetworkImage(
                                                       imageUrl: docs2![0]['avatarGroup'],
-                                                      placeholder: (context, url) => CircularProgressIndicator(),
+                                                      placeholder: (context, url) => Center(heightFactor :5, widthFactor: 5, child: CircularProgressIndicator(value :0)),
                                                       errorWidget:(context, url, error) => Icon(Icons.error),
                                                     ),
                                                   ),
