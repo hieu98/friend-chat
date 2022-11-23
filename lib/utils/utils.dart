@@ -10,9 +10,14 @@ class Utils{
     }
   }
 
-  static Future<bool> askPermission() async{
-    PermissionStatus status = await Permission.storage.request();
-    if(status.isDenied == true)
+  static Future<bool> askPermission(List<Permission> permissions) async{
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.storage,
+      Permission.mediaLibrary,
+      Permission.camera,
+    ].request();
+
+    if(statuses[permissions] == true)
     {
       //openAppSettings();
       return false;

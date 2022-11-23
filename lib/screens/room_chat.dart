@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -35,9 +36,11 @@ class _RoomChatState extends State<RoomChat> {
   ImagePicker picker = ImagePicker();
   XFile? file;
   late String imageUrl;
+  List<CameraDescription>? cameras;
+  CameraController? controller;
+  late Future<void> _initializeControllerFuture;
 
   final _messageController = TextEditingController();
-  final _messageControllerSetting = TextEditingController();
   final _messageFocusNode = FocusNode();
 
   final messageDao = MessageDao();
@@ -45,6 +48,22 @@ class _RoomChatState extends State<RoomChat> {
   bool _isComposing = false;
   late User _user;
   bool isTyping = false;
+  bool isOpenCamera = false;
+
+  loadCamera() async {
+    cameras = await availableCameras();
+    if (cameras != null) {
+      controller = CameraController(cameras![0], ResolutionPreset.max);
+      controller?.initialize().then((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {});
+      });
+    } else {
+      print('No camera!');
+    }
+  }
 
   Future _sendMessage() async {
     final message = _messageController.text.trim();
@@ -89,10 +108,12 @@ class _RoomChatState extends State<RoomChat> {
               :IconButton(
                 splashColor: Colors.transparent,
                 onPressed: () async {
-                  var a = await Utils.askPermission();
-                  if(a){
-                    // file = await picker.pickImage(source: ImageSource.gallery);
-                    // uploadFile(file!);
+                  var checkPermission = await Utils.askPermission([Permission.storage, Permission.mediaLibrary, Permission.camera]);
+                  if(checkPermission){
+                    setState(() {
+                      isOpenCamera = true;
+                    });
+                    //uploadFile(file!);
                   }
                 },
                 icon: Icon(Icons.camera_alt)
@@ -100,8 +121,8 @@ class _RoomChatState extends State<RoomChat> {
           isTyping ? Container() : IconButton(
             splashColor: Colors.transparent,
               onPressed: () async {
-              var a = await Utils.askPermission();
-                if(a){
+              var checkPermission = await Utils.askPermission([Permission.storage, Permission.mediaLibrary]);
+                if(checkPermission){
                   file = await picker.pickImage(source: ImageSource.gallery);
                   uploadFile(file!);
                 }
@@ -165,6 +186,7 @@ class _RoomChatState extends State<RoomChat> {
   void initState() {
     _getUser();
     super.initState();
+    loadCamera();
   }
 
   @override
@@ -231,7 +253,7 @@ class _RoomChatState extends State<RoomChat> {
                                 : CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    margin :EdgeInsets.only(left: 35, right: 35),
+                                    margin :EdgeInsets.only(left: 35, right: 35, bottom: 5),
                                     child: StreamBuilder<QuerySnapshot>(
                                         stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                         builder: (context, snapshot) {
@@ -250,7 +272,7 @@ class _RoomChatState extends State<RoomChat> {
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children:[
                                           Padding(
-                                            padding:EdgeInsets.only(bottom: 5),
+                                            padding:EdgeInsets.only(left: 3, right: 5),
                                             child: StreamBuilder<QuerySnapshot>(
                                               stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                               builder: (context, snapshot) {
@@ -268,7 +290,7 @@ class _RoomChatState extends State<RoomChat> {
                                                         width: 35,
                                                         height: 35,
                                                         imageUrl: docs1![0]['photoUrl'],
-                                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                                        placeholder: (context, url) => Center(heightFactor:5, widthFactor: 5, child: CircularProgressIndicator()),
                                                         errorWidget:(context, url, error) => Icon(Icons.error),
                                                       ),
                                                     ),
@@ -277,61 +299,70 @@ class _RoomChatState extends State<RoomChat> {
                                               },
                                             ),
                                           ),
-                                          Card(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(8.0),
-                                                topRight: Radius.circular(8.0),
-                                                bottomLeft: Radius.circular(
-                                                  docs[index]['senderId'] == _user.uid
-                                                      ? 8.0
-                                                      : 0.0),
-                                                bottomRight: Radius.circular(
-                                                  docs[index]['senderId'] == _user.uid
-                                                      ? 0.0
-                                                      : 8.0),
-                                                )
-                                              ),
-                                            color: docs[index]['senderId'] == _user.uid
-                                                  ? Colors.blue
-                                                  : Colors.blueGrey,
-                                            elevation: 0.0,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(8.0),
-                                              child:
-                                              StreamBuilder<QuerySnapshot>(
-                                                stream: MessageProvider.messageStream(groupId: widget.codeRoom),
-                                                builder: (context, snapshot) {
-                                                  if(!snapshot.hasData) {
-                                                    return Text("");
-                                                  }
-                                                  final docs1 = snapshot.data?.docs;
-                                                  return docs1![index]['typeMessage'] == 'image' ? Material(
-                                                    child: GestureDetector(
-                                                      onTap: (){
-                                                        Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoScreen(url: docs1[index]['message']),));
-                                                      },
-                                                      child: CachedNetworkImage(
-                                                        imageUrl: docs1[index]['message'],
-                                                        width: 100,
-                                                        height: 100,
-                                                        placeholder: (context, url) => CircularProgressIndicator(),
-                                                        errorWidget:(context, url, error) => Icon(Icons.error),
+                                          Flexible(
+                                            child: Card(
+                                              margin: docs[index]['senderId'] == _user.uid
+                                                  ? EdgeInsets.only(left: 80)
+                                                  : EdgeInsets.only(right: 80),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(8.0),
+                                                  topRight: Radius.circular(8.0),
+                                                  bottomLeft: Radius.circular(
+                                                    docs[index]['senderId'] == _user.uid
+                                                        ? 8.0
+                                                        : 0.0),
+                                                  bottomRight: Radius.circular(
+                                                    docs[index]['senderId'] == _user.uid
+                                                        ? 0.0
+                                                        : 8.0),
+                                                  )
+                                                ),
+                                              color: docs[index]['senderId'] == _user.uid
+                                                    ? Colors.blue
+                                                    : Colors.blueGrey,
+                                              elevation: 0.0,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child:
+                                                StreamBuilder<QuerySnapshot>(
+                                                  stream: MessageProvider.messageStream(groupId: widget.codeRoom),
+                                                  builder: (context, snapshot) {
+                                                    if(!snapshot.hasData) {
+                                                      return Text("");
+                                                    }
+                                                    final docs1 = snapshot.data?.docs;
+                                                    return docs1![index]['typeMessage'] == 'image' ? Material(
+                                                      child: GestureDetector(
+                                                        onTap: (){
+                                                          Navigator.push(context, MaterialPageRoute(builder: (context) => FullPhotoScreen(url: docs1[index]['message']),));
+                                                        },
+                                                        child: CachedNetworkImage(
+                                                          imageUrl: docs1[index]['message'],
+                                                          width: 100,
+                                                          height: 100,
+                                                          placeholder: (context, url) => Center(
+                                                            widthFactor: 15,
+                                                            heightFactor: 15,
+                                                            child: CircularProgressIndicator(),
+                                                          ),
+                                                          errorWidget:(context, url, error) => Icon(Icons.error),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ): Text(
-                                                    docs[index]['message'],
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 18.0
-                                                    ),
-                                                  );
-                                                },
+                                                    ): Text(
+                                                        docs[index]['message'],
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 18.0
+                                                        ),
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.only(bottom: 5),
+                                            padding: EdgeInsets.only(left: 5, right: 3),
                                             child: StreamBuilder<QuerySnapshot>(
                                               stream: AuthProvider.nameStream(userId: docs[index]['senderId']),
                                               builder: (context, snapshot) {
@@ -349,7 +380,7 @@ class _RoomChatState extends State<RoomChat> {
                                                           width: 35,
                                                           height: 35,
                                                           imageUrl: docs1![0]['photoUrl'],
-                                                          placeholder: (context, url) => CircularProgressIndicator(),
+                                                          placeholder: (context, url) => Center(heightFactor: 10, widthFactor: 10, child: CircularProgressIndicator()),
                                                           errorWidget:(context, url, error) => Icon(Icons.error),
                                                         ),
                                                     ),
