@@ -15,6 +15,12 @@ class Utils{
       Permission.storage,
       Permission.mediaLibrary,
       Permission.camera,
+      Permission.notification,
+      Permission.photos,
+      Permission.photosAddOnly,
+      Permission.criticalAlerts,
+      Permission.accessNotificationPolicy,
+      Permission.videos
     ].request();
 
     if(statuses[permissions] == true)

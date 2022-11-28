@@ -100,7 +100,7 @@ class _ListRoomChatState extends State<ListRoomChat> {
                                   setState(() {
                                     isLoading = false;
                                     if(!AuthProvider.check()){
-                                      Navigator.pop(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
                                     }
                                   });
                                 }, icon: Icon(Icons.logout))
