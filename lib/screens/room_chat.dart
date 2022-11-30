@@ -38,7 +38,6 @@ class _RoomChatState extends State<RoomChat> {
   late String imageUrl;
   List<CameraDescription>? cameras;
   CameraController? controller;
-  late Future<void> _initializeControllerFuture;
 
   final _messageController = TextEditingController();
   final _messageFocusNode = FocusNode();
